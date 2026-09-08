@@ -10,7 +10,27 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-ENGINE_DIR = Path(__file__).resolve().parent.parent
+def _resolve_engine_dir() -> Path:
+    """Locate the engine root (the dir holding terraform/, data/, output/).
+
+    Works in three layouts:
+      - source checkout:  engine/cloudtrim/config.py -> engine/
+      - docker image:     package in site-packages, terraform/ at WORKDIR (/app)
+      - explicit override via CLOUDTRIM_ENGINE_DIR (CI, custom installs)
+    """
+    env_dir = os.environ.get("CLOUDTRIM_ENGINE_DIR")
+    if env_dir:
+        return Path(env_dir)
+    here = Path(__file__).resolve().parent.parent
+    if (here / "terraform" / "seed").exists():
+        return here
+    for candidate in (Path.cwd(), Path("/app")):
+        if (candidate / "terraform" / "seed").exists():
+            return candidate
+    return here
+
+
+ENGINE_DIR = _resolve_engine_dir()
 DATA_DIR = Path(os.environ.get("CLOUDTRIM_DATA_DIR", ENGINE_DIR / "data"))
 OUTPUT_DIR = Path(os.environ.get("CLOUDTRIM_OUTPUT_DIR", ENGINE_DIR / "output"))
 CUR_DIR = DATA_DIR / "cur"
