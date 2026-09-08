@@ -1,0 +1,23 @@
+# Keep the web build context small — the engine and tooling live in their own image.
+node_modules
+.next
+.git
+.moto-venv
+.ls-fs
+engine
+skills
+scripts
+tool-results
+download
+upload
+db
+tests
+examples
+mini-services
+.zscripts
+*.log
+*.md
+!README.md
+dev.log
+server.log
+worklog.md

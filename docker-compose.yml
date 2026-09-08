@@ -1,0 +1,48 @@
+services:
+  localstack:
+    image: localstack/localstack:3.8.1
+    container_name: cloudtrim-localstack
+    environment:
+      - DEFAULT_REGION=us-west-2
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    ports:
+      - "4566:4566"
+    healthcheck:
+      test: ["CMD", "localstack", "wait", "-t", "30"]
+      interval: 5s
+      timeout: 35s
+      retries: 10
+      start_period: 10s
+
+  engine:
+    build: ./engine
+    container_name: cloudtrim-engine
+    depends_on:
+      localstack:
+        condition: service_healthy
+    environment:
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_REGION=us-west-2
+      - PORT=8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./engine/data:/app/data
+      - ./engine/output:/app/output
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cloudtrim-web
+    depends_on:
+      - engine
+    environment:
+      - ENGINE_API_URL=http://engine:8000
+    ports:
+      - "3000:3000"
+
+# The demo pipeline (seed -> audit -> remediate -> verify) runs on demand:
+#   docker compose exec engine cloudtrim demo
+# The dashboard at http://localhost:3000 reads live engine state.

@@ -1,0 +1,17 @@
+{
+  "name": "CloudTrim — Cloud Cost Audit Demo",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "forwardPorts": [3000, 8000, 4566],
+  "portsAttributes": {
+    "3000": { "label": "CloudTrim dashboard", "onAutoForward": "openBrowser" },
+    "8000": { "label": "CloudTrim engine API" },
+    "4566": { "label": "LocalStack (AWS emulator)" }
+  },
+  "postStartCommand": "docker compose up -d --build; echo 'CloudTrim: run make demo (or docker compose exec engine cloudtrim demo) once containers are healthy.'",
+  "remoteEnv": {
+    "AWS_ENDPOINT_URL": "http://localhost:4566"
+  }
+}
