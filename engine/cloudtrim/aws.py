@@ -12,6 +12,7 @@ import functools
 from typing import Any
 
 import boto3
+from botocore.config import Config
 
 from . import config
 
@@ -36,6 +37,11 @@ def client(service_name: str, region: str | None = None) -> Any:
             aws_access_key_id="test",
             aws_secret_access_key="test",
         )
+        # Emulator endpoints are hostnames (localstack/moto services); S3's
+        # default virtual-host addressing (bucket.localstack) cannot resolve
+        # on the compose network, so force path-style in demo mode only.
+        if service_name == "s3":
+            client_kwargs["config"] = Config(s3={"addressing_style": "path"})
     return session.client(service_name, **client_kwargs)
 
 

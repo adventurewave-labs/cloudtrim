@@ -64,6 +64,10 @@ provider "aws" {
   skip_metadata_api_check     = true
   skip_requesting_account_id  = true
   skip_region_validation      = true
+  # Virtual-host-style S3 addressing (bucket.localstack) needs DNS that the
+  # compose network doesn't provide; path-style works on LocalStack + moto
+  # and is inert on real AWS (we only enable it with a custom endpoint).
+  s3_use_path_style           = var.aws_endpoint == "" ? false : true
 
   dynamic "endpoints" {
     for_each = var.aws_endpoint == "" ? [] : [1]
