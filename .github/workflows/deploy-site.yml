@@ -1,0 +1,41 @@
+name: Deploy landing page
+
+# Deploys docs/ (self-contained landing page) to GitHub Pages.
+# Requires Pages to be available for this repository:
+#   - public repo (free), or GitHub Team/Enterprise plan for private repos.
+# Enable once via Settings > Pages > Source: GitHub Actions, then push to main.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - ".github/workflows/deploy-site.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -8,6 +8,16 @@ This repo is the full working product demo: an audit engine (real boto3, real Te
 a dashboard, a billing-grade cost model, and a verifiable remediation pipeline — packaged
 to run anywhere with `docker compose` (GitHub Codespaces, laptops, CI).
 
+**[docs/index.html](docs/index.html) is a self-contained landing page** (zero dependencies,
+system fonts, references only sibling assets in `docs/`). Open it locally, or deploy it:
+
+- **GitHub Pages** — the repo carries a ready workflow (`.github/workflows/deploy-site.yml`).
+  Enable once via *Settings → Pages → Source: GitHub Actions*, then push to `main`.
+  (Note: Pages on a **private** repo requires GitHub Team/Enterprise; the workflow works
+  unchanged once the plan supports it or the repo is made public.)
+- **Any static host** — Netlify drop, Vercel, Cloudflare Pages, S3+CloudFront: point it at
+  the `docs/` folder. Nothing to build.
+
 The full engagement, recorded live from the dashboard (seed → audit → remediate → verified
 before/after — every number below is measured, not mocked):
 
