@@ -9,10 +9,12 @@ services:
     ports:
       - "4566:4566"
     healthcheck:
-      test: ["CMD", "localstack", "wait", "-t", "30"]
+      # The `localstack` CLI is not on PATH in the 3.8.1 image; the HTTP
+      # health endpoint is the reliable readiness signal.
+      test: ["CMD", "curl", "-fs", "http://localhost:4566/_localstack/health"]
       interval: 5s
-      timeout: 35s
-      retries: 10
+      timeout: 10s
+      retries: 30
       start_period: 10s
 
   engine:
