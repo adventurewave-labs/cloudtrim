@@ -1,8 +1,8 @@
 # CloudTrim demo seed — a realistic, deliberately-wasteful startup AWS account
 #
 # This is REAL Terraform: `terraform apply` here creates the same
-# infrastructure against LocalStack (docker-compose), moto (CI), or a real
-# AWS scratch account (empty var.aws_endpoint). The seeded account models
+# infrastructure against moto (docker-compose / CI), LocalStack Pro, or a
+# real AWS scratch account (empty var.aws_endpoint). The seeded account models
 # an 18-month-old LA startup: production fleet + worker fleet + staging/
 # sandbox sprawl + the classic cost waste (idle instances, orphaned
 # volumes, an idle ALB, S3 buckets with no lifecycle, unbounded logs).
@@ -26,9 +26,9 @@ terraform {
 }
 
 variable "aws_endpoint" {
-  description = "AWS-compatible API endpoint (LocalStack/moto). Empty string = real AWS."
+  description = "AWS-compatible API endpoint (moto/LocalStack Pro). Empty string = real AWS."
   type        = string
-  default     = "http://localstack:4566"
+  default     = "http://moto:4566"
 }
 
 variable "prod_count" {

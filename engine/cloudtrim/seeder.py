@@ -3,7 +3,7 @@
 Two stages, both real:
 
   1. TERRAFORM — `terraform apply` of engine/terraform/seed/main.tf against
-     the configured AWS endpoint (LocalStack in compose, moto in CI, or a
+     the configured AWS endpoint (moto in compose/CI, LocalStack Pro, or a
      real AWS scratch account). 25 instances, 30 volumes, 3 orphaned EIPs,
      2 ALBs, 4 S3 buckets, 3 log groups, VPC networking.
 

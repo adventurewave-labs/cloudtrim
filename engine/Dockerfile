@@ -21,7 +21,7 @@ COPY cloudtrim ./cloudtrim
 COPY terraform ./terraform
 RUN pip install --no-cache-dir .
 
-ENV AWS_ENDPOINT_URL=http://localstack:4566 \
+ENV AWS_ENDPOINT_URL=http://moto:4566 \
     AWS_REGION=us-west-2 \
     TERRAFORM_BIN=terraform \
     PORT=8000

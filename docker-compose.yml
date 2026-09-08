@@ -1,7 +1,7 @@
 services:
-  localstack:
-    image: localstack/localstack:3.8.1
-    container_name: cloudtrim-localstack
+  moto:
+    build: ./moto
+    container_name: cloudtrim-moto
     environment:
       - DEFAULT_REGION=us-west-2
       - AWS_ACCESS_KEY_ID=test
@@ -9,22 +9,22 @@ services:
     ports:
       - "4566:4566"
     healthcheck:
-      # The `localstack` CLI is not on PATH in the 3.8.1 image; the HTTP
-      # health endpoint is the reliable readiness signal.
-      test: ["CMD", "curl", "-fs", "http://localhost:4566/_localstack/health"]
+      # Connection-level readiness: the moto server answers as soon as it
+      # can accept TCP on the API port.
+      test: ["CMD-SHELL", "python -c \"import socket; socket.create_connection(('localhost', 4566), timeout=3)\""]
       interval: 5s
-      timeout: 10s
+      timeout: 5s
       retries: 30
-      start_period: 10s
+      start_period: 5s
 
   engine:
     build: ./engine
     container_name: cloudtrim-engine
     depends_on:
-      localstack:
+      moto:
         condition: service_healthy
     environment:
-      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_ENDPOINT_URL=http://moto:4566
       - AWS_REGION=us-west-2
       - PORT=8000
     ports:
@@ -48,3 +48,8 @@ services:
 # The demo pipeline (seed -> audit -> remediate -> verify) runs on demand:
 #   docker compose exec engine cloudtrim demo
 # The dashboard at http://localhost:3000 reads live engine state.
+#
+# Emulator alternatives: point AWS_ENDPOINT_URL (engine service) at a
+# LocalStack Pro endpoint if you prefer — every service the demo touches is
+# covered there too. Community-edition LocalStack lacks ELBv2, which the
+# wasteful-account seed (2 ALBs) requires.

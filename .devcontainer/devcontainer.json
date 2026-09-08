@@ -5,7 +5,7 @@
   "portsAttributes": {
     "3000": { "label": "CloudTrim dashboard", "onAutoForward": "openBrowser" },
     "8000": { "label": "CloudTrim engine API" },
-    "4566": { "label": "LocalStack (AWS emulator)" }
+    "4566": { "label": "moto (AWS API emulator)" }
   },
   "postStartCommand": "bash .devcontainer/bootstrap.sh",
   "remoteEnv": {

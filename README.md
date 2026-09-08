@@ -23,10 +23,10 @@ The demo seeds a realistic 18-month-old startup AWS account (26 EC2 instances, 3
 
 | Stage | What happens | Measured result |
 |---|---|---|
-| **Connect** | `terraform apply` provisions the wasteful account; 14 days of CloudWatch telemetry + a 60-day CUR billing export are generated from live API state | 110 infra resources, baseline **$8,738.90/mo** |
+| **Connect** | `terraform apply` provisions the wasteful account; 14 days of CloudWatch telemetry + a 60-day CUR billing export are generated from live API state | 110 infra resources, baseline **$8,703.59/mo** |
 | **Audit** | Read-only boto3 inventory scan (paginated describe calls), CUR parsing, 22-rule catalog evaluation, bottom-up cost model cross-check | **99 findings**, CUR-vs-inventory reconciliation **−0.2%** |
-| **Remediate** | Tier 0/1 actions applied via real AWS API calls, each **verified by read-back**; Terraform remediation modules (1.5+ `import` blocks) generated as client artifacts | **64/64 actions verified**, 0 pending |
-| **Verify** | CUR regenerated from post-remediation state, full re-audit | **$8,738.90 → $5,951.67/mo = 31.89% verified reduction** ($33,447/yr) |
+| **Remediate** | Tier 0/1 actions applied via real AWS API calls, each **verified by read-back**; Terraform remediation modules (1.5+ `import` blocks) generated as client artifacts | **65/65 actions verified**, 0 pending |
+| **Verify** | CUR regenerated from post-remediation state, full re-audit | **$8,703.59 → $5,890.53/mo = 32.32% verified reduction** ($33,757/yr) |
 
 Zero customer-facing downtime: every applied action is Tier 0 (pure waste) or Tier 1
 (in-place AWS operations). Tier 2/3 roadmap (rightsizing, NAT consolidation, Graviton,
@@ -73,14 +73,14 @@ Three layers, all real:
    which is what an emulator can't natively provide.
 2. **The code path is production code.** The engine talks to AWS through one seam
    (`cloudtrim/aws.py`): with `AWS_ENDPOINT_URL` set it points at the AWS-compatible
-   emulator (LocalStack in compose); unset, the identical code scans a real AWS
+   emulator (moto in compose); unset, the identical code scans a real AWS
    account through the standard credential chain.
 3. **The money math reconciles.** Savings come from real us-west-2 list pricing times
    live inventory, cross-checked against the CUR billing file every audit. The
    reconciliation variance is printed in the report (typically < ±0.5% here; in live
    audits it catches CUR lag and pricing drift).
 
-What's deliberately demo-only: the emulator itself (LocalStack), the seeded telemetry
+What's deliberately demo-only: the emulator itself (moto), the seeded telemetry
 and billing history, and live-only rules (RDS, ElastiCache, Lambda concurrency) that
 evaluate quietly where the APIs aren't emulated. Everything else — scanning, rules,
 remediation, verification, reporting — is the shipped code.
@@ -106,7 +106,9 @@ them through the engine or the generated Terraform modules via your CI.
 
 ```
 docker compose
-├── localstack   LocalStack 3.8.1 (pinned) — AWS-compatible API endpoint
+├── moto          moto 5.2.3 (pinned) — AWS API emulator (full community coverage:
+│   │             EC2, ELBv2, S3, CloudWatch, Logs, STS; LocalStack Pro works too —
+│   │             community LocalStack lacks ELBv2, which the seed needs)
 ├── engine       Python 3.12 + Terraform 1.9 — cloudtrim package
 │   ├── aws.py           endpoint-agnostic boto3 client factory (the demo/live seam)
 │   ├── scanner.py       paginated read-only inventory + CloudWatch telemetry
@@ -147,11 +149,13 @@ Full specification with detection logic and savings formulas: see the PRD
 
 ## Verified test environments
 
-- **moto 5.2.3** (AWS API emulator, in-process): full E2E — the measured numbers in
-  this README come from this run.
-- **LocalStack 3.8.1** (docker-compose): the shipped demo target. Community-edition
-  API coverage; any remediation action the emulator can't land stays `pending` in the
-  audit log — the engine never claims a change it couldn't verify.
+- **moto 5.2.3, docker-compose** (AWS API emulator, pinned): the shipped demo target —
+  full E2E (seed → audit → remediate → verified reduction) in Codespaces and on any
+  Docker host. The measured numbers in this README come from this stack.
+- **moto 5.2.3, in-process** (CI-style): same code path, same results.
+- **LocalStack Pro**: drop-in alternative — point the engine's `AWS_ENDPOINT_URL` at it.
+  (Community-edition LocalStack is not sufficient: ELBv2 is Pro-only, and the
+  wasteful-account seed creates 2 ALBs.)
 - **Terraform 1.9.8**: seed module (110 resources) and generated remediation modules
   (import blocks) both applied successfully.
 

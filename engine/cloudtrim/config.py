@@ -1,7 +1,7 @@
 """Runtime configuration for the CloudTrim audit engine.
 
 Everything is environment-driven so the same code runs unchanged in:
-  - demo mode  (docker-compose: LocalStack at http://localstack:4566)
+  - demo mode  (docker-compose: moto at http://moto:4566)
   - sandbox CI (moto at http://127.0.0.1:4566)
   - live mode  (real AWS; no AWS_ENDPOINT_URL, standard credential chain)
 """
